@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Queue Ticket</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 2rem; }
+    .number { font-size: 5rem; font-weight: bold; color: darkblue; }
+  </style>
+</head>
+<body>
+  <h2>Your Queue Number</h2>
+  <div class="number" id="yourQueue">...</div>
+  <p>Now Serving: <span id="nowServing">...</span></p>
+  <p>People Ahead of You: <span id="ahead">...</span></p>
+
+  <script>
+    const API = 'PASTE_YOUR_SCRIPT_URL_HERE';
+
+    async function getNewQueue() {
+      const res = await fetch(`${API}?action=next_queue`);
+      const myQueue = parseInt(await res.text());
+      document.getElementById("yourQueue").innerText = `A${myQueue}`;
+      localStorage.setItem("myQueue", myQueue);
+      updateStatus(myQueue);
+    }
+
+    async function updateStatus(myQueue) {
+      const res = await fetch(`${API}?action=get_status`);
+      const data = await res.json();
+      document.getElementById("nowServing").innerText = `A${data.nowServing}`;
+      document.getElementById("ahead").innerText = myQueue - data.nowServing;
+    }
+
+    let myQueue = localStorage.getItem("myQueue");
+    if (!myQueue) {
+      getNewQueue();
+    } else {
+      document.getElementById("yourQueue").innerText = `A${myQueue}`;
+      updateStatus(parseInt(myQueue));
+    }
+
+    setInterval(() => updateStatus(parseInt(localStorage.getItem("myQueue"))), 5000);
+  </script>
+</body>
+</html>

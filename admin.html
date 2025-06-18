@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 2rem; }
+    button { font-size: 2rem; padding: 1rem 2rem; margin: 1rem; }
+  </style>
+</head>
+<body>
+  <h2>Staff Control Panel</h2>
+  <p>Now Serving: <span id="nowServing">...</span></p>
+  <button onclick="callNext()">Call Next</button>
+
+  <script>
+    const API = 'https://script.google.com/macros/s/AKfycbyvzQqNyzaezJmtdGmMFwTkp12EUVwG1BpFe5VAuuoT1EFg-qa_33ClF8mQoasxq-ft/exec';
+
+    async function getStatus() {
+      const res = await fetch(`${API}?action=get_status`);
+      const data = await res.json();
+      document.getElementById("nowServing").innerText = `A${data.nowServing}`;
+    }
+
+    async function callNext() {
+      const res = await fetch(`${API}?action=call_next`);
+      const now = await res.text();
+      document.getElementById("nowServing").innerText = `A${now}`;
+    }
+
+    getStatus();
+    setInterval(getStatus, 5000);
+  </script>
+</body>
+</html>
