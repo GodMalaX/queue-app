@@ -25,26 +25,34 @@
     }
     const deviceId = localStorage.getItem("deviceId");
 
-    async function getNewQueue() {
-      const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
-const data = await res.json();
-const myQueue = parseInt(data.queue);
-const myCode = data.code;
+   async function getNewQueue() {
+  const response = await fetch(`${API}?action=next_queue&device=${deviceId}`);
+  const text = await response.text();
+  console.log("RAW response:", text);
 
-document.getElementById("yourQueue").innerText = `A${myQueue}`;
-document.getElementById("yourCode").innerText = myCode;
+  try {
+    const data = JSON.parse(text);
 
-localStorage.setItem("myQueue", myQueue);
-localStorage.setItem("myCode", myCode);
-
-updateStatus(myQueue);
-
-      const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
-const text = await res.text();
-console.log("RAW response:", text);
-
-
+    if (data.error === "FLOOD_BLOCK") {
+      alert("Please wait a moment before getting a new queue.");
+      return;
     }
+
+    const myQueue = parseInt(data.queue);
+    const myCode = data.code;
+
+    document.getElementById("yourQueue").innerText = `A${myQueue}`;
+    document.getElementById("yourCode").innerText = myCode;
+
+    localStorage.setItem("myQueue", myQueue);
+    localStorage.setItem("myCode", myCode);
+
+    updateStatus(myQueue);
+  } catch (err) {
+    console.error("JSON Parse Error:", err);
+    alert("Something went wrong. Please try again.");
+  }
+}
 
     async function updateStatus(myQueue) {
       const res = await fetch(`${API}?action=get_status`);
