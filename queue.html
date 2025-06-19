@@ -12,13 +12,13 @@
 <body>
   <h2>Your Queue Number</h2>
   <div class="number" id="yourQueue">...</div>
+  <p>Verification Code: <span id="yourCode">...</span></p>
   <p>Now Serving: <span id="nowServing">...</span></p>
   <p>People Ahead of You: <span id="ahead">...</span></p>
 
   <script>
-    const API = 'https://script.google.com/macros/s/AKfycbyvzQqNyzaezJmtdGmMFwTkp12EUVwG1BpFe5VAuuoT1EFg-qa_33ClF8mQoasxq-ft/exec';
+    const API = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec';
 
-    // Generate or load deviceId
     if (!localStorage.getItem("deviceId")) {
       localStorage.setItem("deviceId", "dev_" + Math.random().toString(36).substring(2, 10));
     }
@@ -26,9 +26,16 @@
 
     async function getNewQueue() {
       const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
-      const myQueue = parseInt(await res.text());
+      const data = await res.json();
+      const myQueue = parseInt(data.queue);
+      const myCode = data.code;
+
       document.getElementById("yourQueue").innerText = `A${myQueue}`;
+      document.getElementById("yourCode").innerText = myCode;
+
       localStorage.setItem("myQueue", myQueue);
+      localStorage.setItem("myCode", myCode);
+
       updateStatus(myQueue);
     }
 
@@ -40,10 +47,13 @@
     }
 
     let myQueue = localStorage.getItem("myQueue");
-    if (!myQueue) {
+    let myCode = localStorage.getItem("myCode");
+
+    if (!myQueue || !myCode) {
       getNewQueue();
     } else {
       document.getElementById("yourQueue").innerText = `A${myQueue}`;
+      document.getElementById("yourCode").innerText = myCode;
       updateStatus(parseInt(myQueue));
     }
 
