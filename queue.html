@@ -12,7 +12,6 @@
 <body>
   <h2>Your Queue Number</h2>
   <div class="number" id="yourQueue">...</div>
-  <p>Verification Code: <span id="yourCode">...</span></p>
   <p>Now Serving: <span id="nowServing">...</span></p>
   <p>People Ahead of You: <span id="ahead">...</span></p>
 
@@ -25,34 +24,13 @@
     }
     const deviceId = localStorage.getItem("deviceId");
 
-   async function getNewQueue() {
-  const response = await fetch(`${API}?action=next_queue&device=${deviceId}`);
-  const text = await response.text();
-  console.log("RAW response:", text);
-
-  try {
-    const data = JSON.parse(text);
-
-    if (data.error === "FLOOD_BLOCK") {
-      alert("Please wait a moment before getting a new queue.");
-      return;
+    async function getNewQueue() {
+      const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
+      const myQueue = parseInt(await res.text());
+      document.getElementById("yourQueue").innerText = `A${myQueue}`;
+      localStorage.setItem("myQueue", myQueue);
+      updateStatus(myQueue);
     }
-
-    const myQueue = parseInt(data.queue);
-    const myCode = data.code;
-
-    document.getElementById("yourQueue").innerText = `A${myQueue}`;
-    document.getElementById("yourCode").innerText = myCode;
-
-    localStorage.setItem("myQueue", myQueue);
-    localStorage.setItem("myCode", myCode);
-
-    updateStatus(myQueue);
-  } catch (err) {
-    console.error("JSON Parse Error:", err);
-    alert("Something went wrong. Please try again.");
-  }
-}
 
     async function updateStatus(myQueue) {
       const res = await fetch(`${API}?action=get_status`);
@@ -65,11 +43,8 @@
     if (!myQueue) {
       getNewQueue();
     } else {
-      let myCode = localStorage.getItem("myCode");
-document.getElementById("yourQueue").innerText = `A${myQueue}`;
-document.getElementById("yourCode").innerText = myCode;
-updateStatus(parseInt(myQueue));
-
+      document.getElementById("yourQueue").innerText = `A${myQueue}`;
+      updateStatus(parseInt(myQueue));
     }
 
     setInterval(() => updateStatus(parseInt(localStorage.getItem("myQueue"))), 5000);
