@@ -14,7 +14,6 @@
   <div class="number" id="yourQueue">...</div>
   <p>Now Serving: <span id="nowServing">...</span></p>
   <p>People Ahead of You: <span id="ahead">...</span></p>
-  <p id="statusMsg" style="color:red;"></p>
 
   <script>
     const API = 'https://script.google.com/macros/s/AKfycbyvzQqNyzaezJmtdGmMFwTkp12EUVwG1BpFe5VAuuoT1EFg-qa_33ClF8mQoasxq-ft/exec';
@@ -26,34 +25,18 @@
     const deviceId = localStorage.getItem("deviceId");
 
     async function getNewQueue() {
-      try {
-        const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
-        const text = await res.text();
-
-        if (text === "FLOOD_BLOCK") {
-          document.getElementById("statusMsg").innerText = "Please wait 1 minute before getting a new queue.";
-          return;
-        }
-
-        const myQueue = parseInt(text);
-        document.getElementById("yourQueue").innerText = `A${myQueue}`;
-        localStorage.setItem("myQueue", myQueue);
-        updateStatus(myQueue);
-      } catch (err) {
-        document.getElementById("statusMsg").innerText = "Network error. Please try again.";
-        console.error(err);
-      }
+      const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
+      const myQueue = parseInt(await res.text());
+      document.getElementById("yourQueue").innerText = `A${myQueue}`;
+      localStorage.setItem("myQueue", myQueue);
+      updateStatus(myQueue);
     }
 
     async function updateStatus(myQueue) {
-      try {
-        const res = await fetch(`${API}?action=get_status`);
-        const data = await res.json();
-        document.getElementById("nowServing").innerText = `A${data.nowServing}`;
-        document.getElementById("ahead").innerText = myQueue - data.nowServing;
-      } catch (err) {
-        document.getElementById("statusMsg").innerText = "Unable to fetch status.";
-      }
+      const res = await fetch(`${API}?action=get_status`);
+      const data = await res.json();
+      document.getElementById("nowServing").innerText = `A${data.nowServing}`;
+      document.getElementById("ahead").innerText = myQueue - data.nowServing;
     }
 
     let myQueue = localStorage.getItem("myQueue");
