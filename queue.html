@@ -12,13 +12,13 @@
 <body>
   <h2>Your Queue Number</h2>
   <div class="number" id="yourQueue">...</div>
-  <p>Verification Code: <span id="yourCode">...</span></p>
   <p>Now Serving: <span id="nowServing">...</span></p>
   <p>People Ahead of You: <span id="ahead">...</span></p>
 
   <script>
-    const API = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_URL/exec';
+    const API = 'https://script.google.com/macros/s/AKfycbyvzQqNyzaezJmtdGmMFwTkp12EUVwG1BpFe5VAuuoT1EFg-qa_33ClF8mQoasxq-ft/exec';
 
+    // Generate or load deviceId
     if (!localStorage.getItem("deviceId")) {
       localStorage.setItem("deviceId", "dev_" + Math.random().toString(36).substring(2, 10));
     }
@@ -26,29 +26,10 @@
 
     async function getNewQueue() {
       const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
-      const text = await res.text();
-
-      try {
-        const data = JSON.parse(text);
-        if (data.error === "FLOOD_BLOCK") {
-          alert("Please wait a moment before getting a new queue.");
-          return;
-        }
-
-        const myQueue = parseInt(data.queue);
-        const myCode = data.code;
-
-        document.getElementById("yourQueue").innerText = `A${myQueue}`;
-        document.getElementById("yourCode").innerText = myCode;
-
-        localStorage.setItem("myQueue", myQueue);
-        localStorage.setItem("myCode", myCode);
-
-        updateStatus(myQueue);
-      } catch (err) {
-        alert("Queue error. Please try again.");
-        console.error("Parsing failed:", text, err);
-      }
+      const myQueue = parseInt(await res.text());
+      document.getElementById("yourQueue").innerText = `A${myQueue}`;
+      localStorage.setItem("myQueue", myQueue);
+      updateStatus(myQueue);
     }
 
     async function updateStatus(myQueue) {
@@ -59,13 +40,10 @@
     }
 
     let myQueue = localStorage.getItem("myQueue");
-    let myCode = localStorage.getItem("myCode");
-
-    if (!myQueue || !myCode) {
+    if (!myQueue) {
       getNewQueue();
     } else {
       document.getElementById("yourQueue").innerText = `A${myQueue}`;
-      document.getElementById("yourCode").innerText = myCode;
       updateStatus(parseInt(myQueue));
     }
 
