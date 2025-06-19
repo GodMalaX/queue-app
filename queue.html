@@ -39,6 +39,11 @@ localStorage.setItem("myCode", myCode);
 
 updateStatus(myQueue);
 
+      const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
+const text = await res.text();
+console.log("RAW response:", text);
+
+
     }
 
     async function updateStatus(myQueue) {
