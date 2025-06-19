@@ -17,29 +17,39 @@
   <p>People Ahead of You: <span id="ahead">...</span></p>
 
   <script>
-    const API = 'https://script.google.com/macros/s/AKfycbyvzQqNyzaezJmtdGmMFwTkp12EUVwG1BpFe5VAuuoT1EFg-qa_33ClF8mQoasxq-ft/exec';
+    const API = 'https://script.google.com/macros/s/YOUR_DEPLOYMENT_URL/exec';
 
-    // Generate or load deviceId
     if (!localStorage.getItem("deviceId")) {
       localStorage.setItem("deviceId", "dev_" + Math.random().toString(36).substring(2, 10));
     }
     const deviceId = localStorage.getItem("deviceId");
 
     async function getNewQueue() {
-  const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
-  const data = await res.json();
-  const myQueue = parseInt(data.queue);
-  const myCode = data.code;
+      const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
+      const text = await res.text();
 
-  document.getElementById("yourQueue").innerText = `A${myQueue}`;
-  document.getElementById("yourCode").innerText = myCode;
+      try {
+        const data = JSON.parse(text);
+        if (data.error === "FLOOD_BLOCK") {
+          alert("Please wait a moment before getting a new queue.");
+          return;
+        }
 
-  localStorage.setItem("myQueue", myQueue);
-  localStorage.setItem("myCode", myCode);
+        const myQueue = parseInt(data.queue);
+        const myCode = data.code;
 
-  updateStatus(myQueue);
-}
+        document.getElementById("yourQueue").innerText = `A${myQueue}`;
+        document.getElementById("yourCode").innerText = myCode;
 
+        localStorage.setItem("myQueue", myQueue);
+        localStorage.setItem("myCode", myCode);
+
+        updateStatus(myQueue);
+      } catch (err) {
+        alert("Queue error. Please try again.");
+        console.error("Parsing failed:", text, err);
+      }
+    }
 
     async function updateStatus(myQueue) {
       const res = await fetch(`${API}?action=get_status`);
@@ -49,16 +59,15 @@
     }
 
     let myQueue = localStorage.getItem("myQueue");
-let myCode = localStorage.getItem("myCode");
+    let myCode = localStorage.getItem("myCode");
 
-if (!myQueue || !myCode) {
-  getNewQueue();
-} else {
-  document.getElementById("yourQueue").innerText = `A${myQueue}`;
-  document.getElementById("yourCode").innerText = myCode;
-  updateStatus(parseInt(myQueue));
-}
-
+    if (!myQueue || !myCode) {
+      getNewQueue();
+    } else {
+      document.getElementById("yourQueue").innerText = `A${myQueue}`;
+      document.getElementById("yourCode").innerText = myCode;
+      updateStatus(parseInt(myQueue));
+    }
 
     setInterval(() => updateStatus(parseInt(localStorage.getItem("myQueue"))), 5000);
   </script>
