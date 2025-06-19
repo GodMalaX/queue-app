@@ -24,11 +24,19 @@
     }
 
     async function callNext() {
-      const res = await fetch(`${API}?action=call_next`);
-      const now = await res.text();
-      document.getElementById("nowServing").innerText = `A${now}`;
-    }
+      const key = prompt("Enter admin key:");
+      if (!key) return;
 
+      fetch(`${API}?action=call_next&key=${key}`)
+        .then(res => res.text())
+        .then(now => {
+          if (now === "UNAUTHORIZED") {
+            alert("Invalid key!");
+          } else {
+            document.getElementById("nowServing").innerText = `A${now}`;
+          }
+        });
+    }
     getStatus();
     setInterval(getStatus, 5000);
   </script>
