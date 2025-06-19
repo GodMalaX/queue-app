@@ -12,48 +12,55 @@
 <body>
   <h2>Your Queue Number</h2>
   <div class="number" id="yourQueue">...</div>
-  <p>Verification Code: <span id="yourCode">...</span></p>
   <p>Now Serving: <span id="nowServing">...</span></p>
   <p>People Ahead of You: <span id="ahead">...</span></p>
+  <p id="statusMsg" style="color:red;"></p>
 
   <script>
     const API = 'https://script.google.com/macros/s/AKfycbyvzQqNyzaezJmtdGmMFwTkp12EUVwG1BpFe5VAuuoT1EFg-qa_33ClF8mQoasxq-ft/exec';
 
+    // Generate or load deviceId
     if (!localStorage.getItem("deviceId")) {
       localStorage.setItem("deviceId", "dev_" + Math.random().toString(36).substring(2, 10));
     }
     const deviceId = localStorage.getItem("deviceId");
 
     async function getNewQueue() {
-      const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
-      const data = await res.json();
-      const myQueue = parseInt(data.queue);
-      const myCode = data.code;
+      try {
+        const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
+        const text = await res.text();
 
-      document.getElementById("yourQueue").innerText = `A${myQueue}`;
-      document.getElementById("yourCode").innerText = myCode;
+        if (text === "FLOOD_BLOCK") {
+          document.getElementById("statusMsg").innerText = "Please wait 1 minute before getting a new queue.";
+          return;
+        }
 
-      localStorage.setItem("myQueue", myQueue);
-      localStorage.setItem("myCode", myCode);
-
-      updateStatus(myQueue);
+        const myQueue = parseInt(text);
+        document.getElementById("yourQueue").innerText = `A${myQueue}`;
+        localStorage.setItem("myQueue", myQueue);
+        updateStatus(myQueue);
+      } catch (err) {
+        document.getElementById("statusMsg").innerText = "Network error. Please try again.";
+        console.error(err);
+      }
     }
 
     async function updateStatus(myQueue) {
-      const res = await fetch(`${API}?action=get_status`);
-      const data = await res.json();
-      document.getElementById("nowServing").innerText = `A${data.nowServing}`;
-      document.getElementById("ahead").innerText = myQueue - data.nowServing;
+      try {
+        const res = await fetch(`${API}?action=get_status`);
+        const data = await res.json();
+        document.getElementById("nowServing").innerText = `A${data.nowServing}`;
+        document.getElementById("ahead").innerText = myQueue - data.nowServing;
+      } catch (err) {
+        document.getElementById("statusMsg").innerText = "Unable to fetch status.";
+      }
     }
 
     let myQueue = localStorage.getItem("myQueue");
-    let myCode = localStorage.getItem("myCode");
-
-    if (!myQueue || !myCode) {
+    if (!myQueue) {
       getNewQueue();
     } else {
       document.getElementById("yourQueue").innerText = `A${myQueue}`;
-      document.getElementById("yourCode").innerText = myCode;
       updateStatus(parseInt(myQueue));
     }
 
