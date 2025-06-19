@@ -49,12 +49,16 @@
     }
 
     let myQueue = localStorage.getItem("myQueue");
-    if (!myQueue) {
-      getNewQueue();
-    } else {
-      document.getElementById("yourQueue").innerText = `A${myQueue}`;
-      updateStatus(parseInt(myQueue));
-    }
+let myCode = localStorage.getItem("myCode");
+
+if (!myQueue || !myCode) {
+  getNewQueue();
+} else {
+  document.getElementById("yourQueue").innerText = `A${myQueue}`;
+  document.getElementById("yourCode").innerText = myCode;
+  updateStatus(parseInt(myQueue));
+}
+
 
     setInterval(() => updateStatus(parseInt(localStorage.getItem("myQueue"))), 5000);
   </script>
