@@ -18,8 +18,14 @@
   <script>
     const API = 'https://script.google.com/macros/s/AKfycbyvzQqNyzaezJmtdGmMFwTkp12EUVwG1BpFe5VAuuoT1EFg-qa_33ClF8mQoasxq-ft/exec';
 
+    // Generate or load deviceId
+    if (!localStorage.getItem("deviceId")) {
+      localStorage.setItem("deviceId", "dev_" + Math.random().toString(36).substring(2, 10));
+    }
+    const deviceId = localStorage.getItem("deviceId");
+
     async function getNewQueue() {
-      const res = await fetch(`${API}?action=next_queue`);
+      const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
       const myQueue = parseInt(await res.text());
       document.getElementById("yourQueue").innerText = `A${myQueue}`;
       localStorage.setItem("myQueue", myQueue);
