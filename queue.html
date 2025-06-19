@@ -12,6 +12,7 @@
 <body>
   <h2>Your Queue Number</h2>
   <div class="number" id="yourQueue">...</div>
+  <p>Verification Code: <span id="yourCode">...</span></p>
   <p>Now Serving: <span id="nowServing">...</span></p>
   <p>People Ahead of You: <span id="ahead">...</span></p>
 
@@ -26,10 +27,18 @@
 
     async function getNewQueue() {
       const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
-      const myQueue = parseInt(await res.text());
-      document.getElementById("yourQueue").innerText = `A${myQueue}`;
-      localStorage.setItem("myQueue", myQueue);
-      updateStatus(myQueue);
+const data = await res.json();
+const myQueue = parseInt(data.queue);
+const myCode = data.code;
+
+document.getElementById("yourQueue").innerText = `A${myQueue}`;
+document.getElementById("yourCode").innerText = myCode;
+
+localStorage.setItem("myQueue", myQueue);
+localStorage.setItem("myCode", myCode);
+
+updateStatus(myQueue);
+
     }
 
     async function updateStatus(myQueue) {
@@ -43,8 +52,11 @@
     if (!myQueue) {
       getNewQueue();
     } else {
-      document.getElementById("yourQueue").innerText = `A${myQueue}`;
-      updateStatus(parseInt(myQueue));
+      let myCode = localStorage.getItem("myCode");
+document.getElementById("yourQueue").innerText = `A${myQueue}`;
+document.getElementById("yourCode").innerText = myCode;
+updateStatus(parseInt(myQueue));
+
     }
 
     setInterval(() => updateStatus(parseInt(localStorage.getItem("myQueue"))), 5000);
