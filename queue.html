@@ -25,12 +25,20 @@
     const deviceId = localStorage.getItem("deviceId");
 
     async function getNewQueue() {
-      const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
-      const myQueue = parseInt(await res.text());
-      document.getElementById("yourQueue").innerText = `A${myQueue}`;
-      localStorage.setItem("myQueue", myQueue);
-      updateStatus(myQueue);
-    }
+  const res = await fetch(`${API}?action=next_queue&device=${deviceId}`);
+  const data = await res.json();
+  const myQueue = parseInt(data.queue);
+  const myCode = data.code;
+
+  document.getElementById("yourQueue").innerText = `A${myQueue}`;
+  document.getElementById("yourCode").innerText = myCode;
+
+  localStorage.setItem("myQueue", myQueue);
+  localStorage.setItem("myCode", myCode);
+
+  updateStatus(myQueue);
+}
+
 
     async function updateStatus(myQueue) {
       const res = await fetch(`${API}?action=get_status`);
